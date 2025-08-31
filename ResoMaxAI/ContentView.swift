@@ -41,10 +41,10 @@ struct ContentView: View {
                 // 画像ファイルを選択するための「開く」ボタン。
                 Button {
                     openImage()
-                } label: { Label("開く…", systemImage: "folder") }
+                } label: { Label("Open", systemImage: "folder") }
 
                 // 計算デバイスを選択するためのPicker（ドロップダウンメニュー）
-                Picker("計算デバイス:", selection: $selectedComputeUnit) {
+                Picker("Device:", selection: $selectedComputeUnit) {
                     // ComputeUnitOptionの全ケースをループしてメニュー項目を作成
                     ForEach(ComputeUnitOption.allCases) { option in
                         // 各項目には、enumのdescriptionが表示されます
@@ -53,18 +53,19 @@ struct ContentView: View {
                 }
                 .pickerStyle(.menu) // ドロップダウンメニュー形式のスタイルを適用
                 .frame(width: 240) // Pickerの幅を固定
+                .labelsHidden() // ラベルを非表示にする
 
                 // 高画質化処理を開始するボタン。
                 Button {
                     runSR()
-                } label: { Label("高画質化", systemImage: "sparkles") }
+                } label: { Label("SuperResolution x4", systemImage: "sparkles") }
                 // 入力画像がない、エンジンが初期化されていない、または処理中の場合は無効化します。
                 .disabled(inputImage == nil || engine == nil || isProcessing)
 
                 // 生成された画像を保存するボタン。
                 Button {
                     saveOutput()
-                } label: { Label("保存", systemImage: "square.and.arrow.down") }
+                } label: { Label("Save", systemImage: "square.and.arrow.down") }
                 // 出力画像がない、または処理中の場合は無効化します。
                 .disabled(outputImage == nil || isProcessing)
 
@@ -82,7 +83,7 @@ struct ContentView: View {
             HStack {
                 // 入力画像表示エリア。
                 VStack {
-                    Text("入力")
+                    Text("input")
                     // ZStackはビューを重ねて配置します。背景色と画像を重ねています。
                     ZStack {
                         // 背景色を設定します。
@@ -92,19 +93,19 @@ struct ContentView: View {
                             Image(nsImage: img).resizable().scaledToFit()
                         } else {
                             // 画像が選択されていない場合はプレースホルダーテキストを表示します。
-                            Text("画像を開いてください").foregroundStyle(.secondary)
+                            Text("Open image").foregroundStyle(.secondary)
                         }
                     }
                 }
                 // 出力画像表示エリア。
                 VStack {
-                    Text("出力")
+                    Text("output")
                     ZStack {
                         Color(NSColor.underPageBackgroundColor)
                         if let img = outputImage {
                             Image(nsImage: img).resizable().scaledToFit()
                         } else {
-                            Text("未生成").foregroundStyle(.secondary)
+                            Text("Not generated").foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -128,7 +129,7 @@ struct ContentView: View {
             setupEngine(computeUnit: selectedComputeUnit)
         }
         // selectedComputeUnitの値が変更されたときに実行されます。
-        .onChange(of: selectedComputeUnit) { newComputeUnit in
+        .onChange(of: selectedComputeUnit) {  oldValue, newComputeUnit in
             // 新しく選択されたデバイスでエンジンを再セットアップします。
             setupEngine(computeUnit: newComputeUnit)
         }
@@ -141,7 +142,7 @@ struct ContentView: View {
         self.engine = nil
 
         // メッセージを表示して、ユーザーにどのデバイスで初期化中か知らせます。
-        self.message = "\(computeUnit.description) でエンジンを準備中..."
+        self.message = "\(computeUnit.description) Preparing engine..."
 
         // エンジンの初期化は重い可能性があるので、バックグラウンドスレッドで行います。
         DispatchQueue.global(qos: .userInitiated).async {
@@ -153,13 +154,13 @@ struct ContentView: View {
                 // UIの更新はメインスレッドで行います。
                 DispatchQueue.main.async {
                     self.engine = newEngine
-                    self.message = "\(computeUnit.description) の準備完了"
+                    self.message = "\(computeUnit.description) Preparation complete"
                 }
             } catch {
                 // エラーが発生した場合もUIをメインスレッドで更新します。
                 DispatchQueue.main.async {
                     self.engine = nil
-                    self.message = "エンジンの初期化に失敗: \(error.localizedDescription)"
+                    self.message = "Failed to initialize engine: \(error.localizedDescription)"
                 }
             }
         }
@@ -219,7 +220,7 @@ struct ContentView: View {
                 // エラーが発生した場合も、UI更新はメインスレッドで行います。
                 DispatchQueue.main.async {
                     self.isProcessing = false
-                    self.message = "失敗: \(error.localizedDescription)" // よりユーザーフレンドリーなエラーメッセージが良いでしょう。
+                    self.message = "Failed: \(error.localizedDescription)" // よりユーザーフレンドリーなエラーメッセージが良いでしょう。
                 }
             }
         }
@@ -234,7 +235,7 @@ struct ContentView: View {
               let tiff = out.tiffRepresentation,
               let rep = NSBitmapImageRep(data: tiff),
               let data = rep.representation(using: .png, properties: [:]) else {
-            message = "保存用データ作成に失敗"
+            message = "Failed to save: PNG data conversion failed"
             return
         }
 
@@ -247,9 +248,9 @@ struct ContentView: View {
             do {
                 // 指定されたURLにファイルとして書き出します。
                 try data.write(to: url)
-                message = "保存しました: \(url.lastPathComponent)"
+                message = "Saved: \(url.lastPathComponent)"
             } catch {
-                message = "保存に失敗: \(error.localizedDescription)"
+                message = "Failed to save: \(error.localizedDescription)"
             }
         }
     }
