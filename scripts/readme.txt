@@ -14,16 +14,14 @@ macOS 向けの 4x 超解像度アプリケーションです。
 Conversion Script
 This repository also includes a script scripts/convert_to_coreml2.py for converting the pre-trained PyTorch Real-ESRGAN model (.pth) into Core ML format (.mlpackage).
 
-You can download the official .pth model from the Real-ESRGAN Releases, and regenerate the .mlpackage using the following command:
+You can download the official realesr-general-x4v3.pth model from the Real-ESRGAN Releases, and regenerate the .mlpackage using the following command:
 
 本リポジトリには、PyTorch 版 Real-ESRGAN の学習済みモデル (`.pth`) を  
 Core ML フォーマット (`.mlpackage`) に変換するスクリプト **`scripts/convert_to_coreml2.py`** も含まれています。  
 
-公式の `.pth` モデルを [Real-ESRGAN Releases](https://github.com/xinntao/Real-ESRGAN/releases) から取得し、  
+公式の `realesr-general-x4v3.pth` モデルを [Real-ESRGAN Releases](https://github.com/xinntao/Real-ESRGAN/releases) から取得し、  
 以下のコマンドで `.mlpackage` を再生成できます:
 
 ```bash
 pip install -r requirements.txt
-python scripts/convert_to_coreml2.py \
-    --input RealESRGAN_x4v3.pth \
-    --output RealESRGAN_x4v3.mlpackage
+python convert_to_coreml2.py
