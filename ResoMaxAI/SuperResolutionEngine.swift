@@ -198,15 +198,9 @@ final class SuperResolutionEngine {
                     let cropRect = CGRect(x: srcX, y: srcYTopLeft, width: srcW, height: srcH)
                     if let cropped = outTile.cropping(to: cropRect) {
                         ctx.draw(cropped, in: CGRect(x: dstX, y: dstY, width: srcW, height: srcH))
-                    } else {
-                        // croppingに失敗した場合、デバッグのために元タイルを描画するなどのフォールバック。
-                        // バグ: 現在の実装では、cropping失敗時に元のoutTileを描画していますが、
-                        // 座標がずれるため、意図しない結果になる可能性があります。
-                        ctx.draw(outTile, in: CGRect(x: dstX, y: dstY, width: outTile.width, height: outTile.height))
                     }
-                } else {
-                    // バグ: srcW/srcHが0以下の場合も、元のoutTileを描画しており、意図しない結果になる可能性があります。
-                    ctx.draw(outTile, in: CGRect(x: dstX, y: dstY, width: outTile.width, height: outTile.height))
+                    // croppingに失敗した場合、あるいは計算後のサイズが0になった場合は、何も描画しません。
+                    // これにより、パディングされた黒い領域が最終画像に描画されるのを防ぎます。
                 }
 
                 // 進捗を更新します。
