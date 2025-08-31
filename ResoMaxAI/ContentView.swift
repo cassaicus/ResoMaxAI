@@ -7,10 +7,11 @@ struct ContentView: View {
     // @Stateプロパティラッパーは、Viewの状態を管理するために使用されます。
     // これらの変数の値が変更されると、SwiftUIは自動的にViewの関連部分を再描画します。
 
-    // 高画質化処理を行うエンジン。アプリ起動時に初期化を試みます。
-    // 失敗した場合はnilとなり、高画質化機能は無効になります。
-    // アドバイス: エラーハンドリングを改善し、ユーザーにモデル読み込み失敗を通知するUIを追加するとより親切です。
-    @State private var engine: SuperResolutionEngine? = try? SuperResolutionEngine(modelNameInBundle: "RealESRGAN_x4v3_tensor")
+    // 高画質化処理を行うエンジン。UIで選択されたデバイス設定に応じて動的に初期化されます。
+    @State private var engine: SuperResolutionEngine?
+
+    // UIで選択されている計算デバイスのオプション。
+    @State private var selectedComputeUnit: ComputeUnitOption = .auto
 
     // ユーザーが選択した入力画像のURL。保存時のデフォルトファイル名などに使用されます。
     @State private var inputURL: URL?
@@ -58,6 +59,17 @@ struct ContentView: View {
 
                 // Spacerは利用可能なスペースを埋めるために使われ、ボタンを左寄せにします。
                 Spacer()
+
+                // 計算デバイスを選択するためのPicker（ドロップダウンメニュー）
+                Picker("計算デバイス:", selection: $selectedComputeUnit) {
+                    // ComputeUnitOptionの全ケースをループしてメニュー項目を作成
+                    ForEach(ComputeUnitOption.allCases) { option in
+                        // 各項目には、enumのdescriptionが表示されます
+                        Text(option.description).tag(option)
+                    }
+                }
+                .pickerStyle(.menu) // ドロップダウンメニュー形式のスタイルを適用
+                .frame(width: 240) // Pickerの幅を固定
 
                 // 処理中の場合にのみプログレスバーを表示します。
                 if isProcessing {
@@ -109,6 +121,47 @@ struct ContentView: View {
             message = nil
         })) { msg in
             Alert(title: Text(msg.text))
+        }
+        // Viewが最初に表示されたときに実行されます。
+        .onAppear {
+            // 選択されているデバイスでエンジンを初期セットアップします。
+            setupEngine(computeUnit: selectedComputeUnit)
+        }
+        // selectedComputeUnitの値が変更されたときに実行されます。
+        .onChange(of: selectedComputeUnit) { newComputeUnit in
+            // 新しく選択されたデバイスでエンジンを再セットアップします。
+            setupEngine(computeUnit: newComputeUnit)
+        }
+    }
+
+    // 指定された計算デバイスでSuperResolutionEngineをセットアップするメソッド。
+    private func setupEngine(computeUnit: ComputeUnitOption) {
+        // 新しいエンジンを初期化する前に、UIをリセットして古い出力をクリアします。
+        self.outputImage = nil
+        self.engine = nil
+
+        // メッセージを表示して、ユーザーにどのデバイスで初期化中か知らせます。
+        self.message = "\(computeUnit.description) でエンジンを準備中..."
+
+        // エンジンの初期化は重い可能性があるので、バックグラウンドスレッドで行います。
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let newEngine = try SuperResolutionEngine(
+                    modelNameInBundle: "RealESRGAN_x4v3_tensor",
+                    computeUnits: computeUnit.mlComputeUnit
+                )
+                // UIの更新はメインスレッドで行います。
+                DispatchQueue.main.async {
+                    self.engine = newEngine
+                    self.message = "\(computeUnit.description) の準備完了"
+                }
+            } catch {
+                // エラーが発生した場合もUIをメインスレッドで更新します。
+                DispatchQueue.main.async {
+                    self.engine = nil
+                    self.message = "エンジンの初期化に失敗: \(error.localizedDescription)"
+                }
+            }
         }
     }
 
