@@ -11,7 +11,7 @@ struct ContentView: View {
     @State private var engine: SuperResolutionEngine?
 
     // UIで選択されている計算デバイスのオプション。
-    @State private var selectedComputeUnit: ComputeUnitOption = .auto
+    @State private var selectedComputeUnit: ComputeUnitOption = .all
 
     // ユーザーが選択した入力画像のURL。保存時のデフォルトファイル名などに使用されます。
     @State private var inputURL: URL?
@@ -43,6 +43,17 @@ struct ContentView: View {
                     openImage()
                 } label: { Label("開く…", systemImage: "folder") }
 
+                // 計算デバイスを選択するためのPicker（ドロップダウンメニュー）
+                Picker("計算デバイス:", selection: $selectedComputeUnit) {
+                    // ComputeUnitOptionの全ケースをループしてメニュー項目を作成
+                    ForEach(ComputeUnitOption.allCases) { option in
+                        // 各項目には、enumのdescriptionが表示されます
+                        Text(option.description).tag(option)
+                    }
+                }
+                .pickerStyle(.menu) // ドロップダウンメニュー形式のスタイルを適用
+                .frame(width: 240) // Pickerの幅を固定
+
                 // 高画質化処理を開始するボタン。
                 Button {
                     runSR()
@@ -59,17 +70,6 @@ struct ContentView: View {
 
                 // Spacerは利用可能なスペースを埋めるために使われ、ボタンを左寄せにします。
                 Spacer()
-
-                // 計算デバイスを選択するためのPicker（ドロップダウンメニュー）
-                Picker("計算デバイス:", selection: $selectedComputeUnit) {
-                    // ComputeUnitOptionの全ケースをループしてメニュー項目を作成
-                    ForEach(ComputeUnitOption.allCases) { option in
-                        // 各項目には、enumのdescriptionが表示されます
-                        Text(option.description).tag(option)
-                    }
-                }
-                .pickerStyle(.menu) // ドロップダウンメニュー形式のスタイルを適用
-                .frame(width: 240) // Pickerの幅を固定
 
                 // 処理中の場合にのみプログレスバーを表示します。
                 if isProcessing {
