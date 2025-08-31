@@ -1,11 +1,12 @@
 # macOS Super-Resolution App
 
 macOS Super-Resolution App
-A 4x super-resolution application for macOS. It uses a Core ML–converted version of Real-ESRGAN_x4v3 internally. The repository includes the pre-converted RealESRGAN_x4v3.mlpackage
+A 4x super-resolution application for macOS. It uses a Core ML–converted version of Real-ESRGAN_x4v3 internally.
+ The repository includes the pre-converted RealESRGAN_x4v3_tensor.mlpackage
 
 macOS 向けの 4x 超解像度アプリケーションです。  
 内部で [Real-ESRGAN_x4v3](https://github.com/xinntao/Real-ESRGAN) を Core ML に変換したモデルを利用しています。  
-リポジトリには変換済みの **`RealESRGAN_x4v3.mlpackage`** が含まれています。
+リポジトリには変換済みの **`RealESRGAN_x4v3_tensor.mlpackage`** が含まれています。
 
 ---
 
