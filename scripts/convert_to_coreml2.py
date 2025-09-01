@@ -11,7 +11,7 @@ model = SRVGGNetCompact(
 )
 
 # 重み読み込み
-ckpt = torch.load('weights/realesr-general-x4v3.pth', map_location='cpu')
+ckpt = torch.load('realesr-general-x4v3.pth', map_location='cpu')
 if 'params' in ckpt:
     ckpt = ckpt['params']
 model.load_state_dict(ckpt, strict=True)
